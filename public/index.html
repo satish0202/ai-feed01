@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI & Fintech News Feed</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+
+      --tag-agentic:    #6366f1;
+      --tag-banking:    #0ea5e9;
+      --tag-fintech:    #10b981;
+      --tag-regulation: #f59e0b;
+      --tag-fraud:      #ef4444;
+      --tag-llm:        #a855f7;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 17, 23, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      gap: 16px;
+    }
+
+    .logo {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .logo span { color: var(--accent); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #status {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    #countdown {
+      font-size: 12px;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { border-color: var(--accent); color: var(--accent-hover); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+    }
+
+    .filter-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .chip {
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: all .15s;
+    }
+
+    .chip.active, .chip:hover { color: #fff; border-color: transparent; }
+    .chip[data-tag="all"].active    { background: var(--accent); }
+    .chip[data-tag="agentic"].active    { background: var(--tag-agentic); }
+    .chip[data-tag="banking"].active    { background: var(--tag-banking); }
+    .chip[data-tag="fintech"].active    { background: var(--tag-fintech); }
+    .chip[data-tag="regulation"].active { background: var(--tag-regulation); }
+    .chip[data-tag="fraud"].active      { background: var(--tag-fraud); }
+    .chip[data-tag="llm"].active        { background: var(--tag-llm); }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Cards ── */
+    #feed {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color .15s, transform .15s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-source {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--accent);
+    }
+
+    .card-date {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #fff;
+    }
+
+    .tag-agentic    { background: var(--tag-agentic); }
+    .tag-banking    { background: var(--tag-banking); }
+    .tag-fintech    { background: var(--tag-fintech); }
+    .tag-regulation { background: var(--tag-regulation); }
+    .tag-fraud      { background: var(--tag-fraud); }
+    .tag-llm        { background: var(--tag-llm); }
+
+    .score-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .score-3 { background: var(--green); }
+    .score-2 { background: var(--yellow); }
+    .score-1 { background: var(--muted); }
+
+    /* ── States ── */
+    .state-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg { color: var(--red); }
+
+    /* ── Pulse dot for live ── */
+    .live-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+      animation: pulse 2s infinite;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.6); }
+      70%  { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+      100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo"><span>AI</span> &amp; Fintech Feed</div>
+    <div class="header-right">
+      <span id="status"></span>
+      <span id="countdown"></span>
+      <button class="btn" id="refreshBtn" onclick="manualRefresh()">↺ Refresh</button>
+    </div>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <div class="filter-inner">
+    <span class="filter-label">Filter</span>
+    <button class="chip active" data-tag="all"        onclick="setFilter('all')">All</button>
+    <button class="chip"        data-tag="agentic"    onclick="setFilter('agentic')">Agentic AI</button>
+    <button class="chip"        data-tag="banking"    onclick="setFilter('banking')">Banking</button>
+    <button class="chip"        data-tag="fintech"    onclick="setFilter('fintech')">Fintech</button>
+    <button class="chip"        data-tag="regulation" onclick="setFilter('regulation')">Regulation</button>
+    <button class="chip"        data-tag="fraud"      onclick="setFilter('fraud')">Fraud / Risk</button>
+    <button class="chip"        data-tag="llm"        onclick="setFilter('llm')">LLM / Models</button>
+  </div>
+</div>
+
+<main>
+  <div class="meta-row">
+    <span id="articleCount"></span>
+    <span><span class="live-dot"></span> Auto-refreshes every 15 min</span>
+  </div>
+  <div id="feed">
+    <div class="state-msg"><div class="spinner"></div><br>Loading feed…</div>
+  </div>
+</main>
+
+<script>
+  const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+
+  let allArticles = [];
+  let activeFilter = 'all';
+  let nextRefresh = null;
+  let countdownTimer = null;
+
+  function relativeTime(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  }
+
+  function scoreClass(score) {
+    if (score >= 3) return 'score-3';
+    if (score >= 2) return 'score-2';
+    return 'score-1';
+  }
+
+  function renderCards(articles) {
+    const feed = document.getElementById('feed');
+    document.getElementById('articleCount').textContent =
+      `${articles.length} article${articles.length !== 1 ? 's' : ''}`;
+
+    if (!articles.length) {
+      feed.innerHTML = '<div class="state-msg">No articles match this filter.</div>';
+      return;
+    }
+
+    feed.innerHTML = articles.map(a => `
+      <a class="card" href="${a.url}" target="_blank" rel="noopener">
+        <div class="card-top">
+          <span class="card-source">${a.source?.name || 'Unknown'}</span>
+          <span class="card-date">${relativeTime(a.publishedAt)}</span>
+        </div>
+        <div class="card-title">
+          <span class="score-dot ${scoreClass(a.score)}"></span>
+          ${escHtml(a.title)}
+        </div>
+        ${a.description
+          ? `<div class="card-desc">${escHtml(a.description)}</div>`
+          : ''}
+        <div class="card-tags">
+          ${(a.tags || []).map(t => `<span class="tag tag-${t}">${t}</span>`).join('')}
+        </div>
+      </a>
+    `).join('');
+  }
+
+  function applyFilter() {
+    const visible = activeFilter === 'all'
+      ? allArticles
+      : allArticles.filter(a => a.tags?.includes(activeFilter));
+    renderCards(visible);
+  }
+
+  function setFilter(tag) {
+    activeFilter = tag;
+    document.querySelectorAll('.chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.tag === tag);
+    });
+    applyFilter();
+  }
+
+  function setStatus(msg) {
+    document.getElementById('status').textContent = msg;
+  }
+
+  function startCountdown() {
+    clearInterval(countdownTimer);
+    nextRefresh = Date.now() + REFRESH_INTERVAL_MS;
+    countdownTimer = setInterval(() => {
+      const secs = Math.max(0, Math.round((nextRefresh - Date.now()) / 1000));
+      const m = String(Math.floor(secs / 60)).padStart(2, '0');
+      const s = String(secs % 60).padStart(2, '0');
+      document.getElementById('countdown').textContent = `next in ${m}:${s}`;
+      if (secs === 0) fetchFeed();
+    }, 1000);
+  }
+
+  async function fetchFeed(force = false) {
+    const btn = document.getElementById('refreshBtn');
+    btn.disabled = true;
+    setStatus('Fetching…');
+
+    try {
+      const url = force ? '/api/refresh' : '/api/news';
+      const method = force ? 'POST' : 'GET';
+      const res = await fetch(url, { method });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Server error');
+
+      allArticles = data.articles || [];
+      const updated = data.updatedAt
+        ? new Date(data.updatedAt).toLocaleTimeString()
+        : '—';
+      setStatus(`Updated ${updated}`);
+      applyFilter();
+      startCountdown();
+    } catch (err) {
+      document.getElementById('feed').innerHTML =
+        `<div class="state-msg error-msg">Error: ${escHtml(err.message)}</div>`;
+      setStatus('Error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function manualRefresh() {
+    fetchFeed(true);
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  fetchFeed();
+</script>
+</body>
+</html>
