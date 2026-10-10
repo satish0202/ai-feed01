@@ -1,0 +1,19 @@
+{
+  "name": "horizon-weather",
+  "version": "1.0.0",
+  "description": "Long-range weather outlooks (1–12 months) with Claude deep-thinking analysis on top of 35 years of climate history and seasonal ensembles",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
