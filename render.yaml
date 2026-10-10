@@ -1,0 +1,18 @@
+# One-click deploy of the Horizon weather app (weather-forecast/) to Render.
+# Render asks for the two values marked sync: false when you deploy.
+services:
+  - type: web
+    name: horizon-weather
+    runtime: node
+    plan: free
+    rootDir: weather-forecast
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: APP_PASSWORD
+        sync: false

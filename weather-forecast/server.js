@@ -30,6 +30,22 @@ function parseCoords(req) {
 
 const r1 = v => climate.round(v, 1);
 
+// Health check for hosting platforms; answers before the password check
+app.get('/healthz', (req, res) => res.send('ok'));
+
+// Optional password for public deployments, so strangers can't spend the
+// Anthropic key. The browser shows its own sign-in prompt; any username works.
+if (process.env.APP_PASSWORD) {
+  const crypto = require('crypto');
+  const expected = crypto.createHash('sha256').update(process.env.APP_PASSWORD).digest();
+  app.use((req, res, next) => {
+    const [scheme, encoded] = (req.headers.authorization || '').split(' ');
+    const password = scheme === 'Basic' ? Buffer.from(encoded || '', 'base64').toString().split(':').slice(1).join(':') : '';
+    if (crypto.timingSafeEqual(crypto.createHash('sha256').update(password).digest(), expected)) return next();
+    res.set('WWW-Authenticate', 'Basic realm="Horizon", charset="UTF-8"').status(401).send('Password required.');
+  });
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/config', (req, res) => {
