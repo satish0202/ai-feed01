@@ -33,6 +33,17 @@ If the AI step is unavailable (for example, no API key), the page still shows th
 
 > Beyond about two weeks no one can forecast day-to-day weather. Long-range outlooks describe shifts in the odds compared with normal. Use official sources for safety-critical decisions.
 
+## Put it online (no install)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/satish0202/ai-feed01)
+
+1. Click the button and sign in to Render with GitHub.
+2. When asked, enter your `ANTHROPIC_API_KEY` and choose an `APP_PASSWORD`.
+3. Click **Deploy**. After a few minutes Render shows your link (`https://horizon-weather-….onrender.com`).
+4. Open it and sign in with any username and your `APP_PASSWORD`.
+
+Set a password: without one, anyone who finds the link can run outlooks on your Anthropic account. The free plan sleeps when idle, so the first visit after a break takes about 30 seconds.
+
 ## Setup
 
 ```bash
@@ -53,6 +64,7 @@ Open `http://localhost:3001`.
 | `PORT` | `3001` | Server port |
 | `CLAUDE_MODEL` | `claude-opus-5-5` | Model used for the outlook |
 | `DEFAULT_EFFORT` | `high` | Default thinking depth: `medium`, `high`, `xhigh` or `max` |
+| `APP_PASSWORD` | — | If set, the site asks for this password (any username) |
 
 Requests use server-side refusal fallbacks (`fallbacks: "default"`), so a declined request is retried on a fallback model automatically.
 

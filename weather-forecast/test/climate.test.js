@@ -134,6 +134,26 @@ test('seasonal ensemble is summarized per month and shifts the baseline', () => 
   }
 });
 
+test('a seasonal month without precipitation members does not read as 0% of normal', () => {
+  // Live SEAS5 output: precipitation turns null weeks before temperature does
+  const today = '2026-10-10';
+  const time = Array.from({ length: 60 }, (_, i) => climate.addDays(today, i));
+  const temp = Array.from({ length: 3 }, () => time.map(t => climate.dailyNormal(profile.normals, t, 'tmax')));
+  const precip = Array.from({ length: 3 }, () => time.map(t => (t < '2026-11-01' ? 3 : null)));
+  const months = climate.summarizeSeasonal({ time, tmax: temp, tmin: temp, precip }, profile.normals);
+  const nov = months.find(m => m.key === '2026-11');
+  assert.equal(nov.members, 3);
+  assert.equal(nov.precip, null);
+  assert.equal(nov.rawPrecipPctOfNormal, null);
+  assert.equal(nov.pctMembersWetter, null);
+
+  const periods = climate.buildPeriods(3, today);
+  const withSeas = climate.computeBaseline({ periods, today, profile, forecastDaily: null, seasonalMonths: months });
+  const without = climate.computeBaseline({ periods, today, profile, forecastDaily: null, seasonalMonths: null });
+  const novIdx = periods.findIndex(p => p.id === '2026-11');
+  assert.equal(withSeas[novIdx].baseline.precip, without[novIdx].baseline.precip);
+});
+
 test('toPct always sums to 100', () => {
   for (const ps of [[0.1, 0.2, 0.7], [1 / 3, 1 / 3, 1 / 3], [0, 0, 1], [0.005, 0.49, 0.505]]) {
     const r = climate.toPct(ps);

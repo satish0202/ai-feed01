@@ -278,6 +278,9 @@ function summarizeSeasonal(seasonal, normals) {
     const n = normals.months[b.month - 1];
     const tmean = tmax.map((x, i) => (finite(tmin[i]) ? (x + tmin[i]) / 2 : null)).filter(finite);
     const tmeanEns = mean(tmean);
+    // Precipitation ends a few weeks before temperature in SEAS5, so the last
+    // month can have temperatures but no precipitation members
+    const precipEns = mean(precip);
     out.push({
       key: `${b.year}-${String(b.month).padStart(2, '0')}`,
       label: `${MONTH_NAMES[b.month - 1]} ${b.year}`,
@@ -286,13 +289,13 @@ function summarizeSeasonal(seasonal, normals) {
       tmax: round(mean(tmax)),
       tmin: round(mean(tmin)),
       tmeanSpread: round(std(tmean), 2),
-      precip: round(mean(precip)),
+      precip: round(precipEns),
       precipSpread: round(std(precip)),
       rawTempAnomaly: finite(n.tmean) ? round(tmeanEns - n.tmean, 2) : null,
-      rawPrecipPctOfNormal: n.precip ? Math.round((mean(precip) / n.precip) * 100) : null,
+      rawPrecipPctOfNormal: n.precip && finite(precipEns) ? Math.round((precipEns / n.precip) * 100) : null,
       // Share of members warmer/wetter than the ERA5 normal (biased by model drift)
       pctMembersWarmer: finite(n.tmean) ? Math.round((tmean.filter(x => x > n.tmean).length / tmean.length) * 100) : null,
-      pctMembersWetter: n.precip ? Math.round((precip.filter(x => x > n.precip).length / precip.length) * 100) : null,
+      pctMembersWetter: n.precip && precip.length ? Math.round((precip.filter(x => x > n.precip).length / precip.length) * 100) : null,
     });
   }
   return out.length ? out : null;
