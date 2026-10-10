@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horizon Weather</title>
+  <meta name="description" content="Long-range weather outlooks from 1 to 12 months, reasoned by AI over 35 years of climate history and seasonal ensembles." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤️</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">🌤️</span><div>Horizon<small>Long-range weather</small></div></div>
+      <form class="search" id="search-form" role="search" autocomplete="off">
+        <input id="search-input" type="search" placeholder="Search a city or place…" aria-label="Search location"
+               aria-autocomplete="list" aria-controls="suggestions" />
+        <button type="button" class="icon-btn" id="locate-btn" title="Use my location" aria-label="Use my location">📍</button>
+        <ul class="suggestions hidden" id="suggestions" role="listbox"></ul>
+      </form>
+      <div class="segmented" role="group" aria-label="Units">
+        <button type="button" data-units="metric" aria-pressed="true">°C</button>
+        <button type="button" data-units="imperial" aria-pressed="false">°F</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card welcome" id="welcome">
+      <h1>See the weather months ahead</h1>
+      <p>Horizon combines 35 years of daily climate history, the ECMWF 51-member seasonal ensemble and the latest 16-day forecast, then has Claude reason through the climate drivers to build 1-, 3-, 6- and 12-month outlooks.</p>
+      <div class="chips" id="popular"></div>
+    </section>
+
+    <section class="card hero hidden" id="current" aria-live="polite"></section>
+
+    <section class="card hidden" id="outlook">
+      <div class="outlook-head">
+        <div>
+          <div class="badge-focus">Long-range outlook</div>
+          <h2 id="outlook-title">Long-range forecast</h2>
+          <div class="card-sub">Probabilities of warmer, cooler, wetter or drier than normal, with expected temperatures and rainfall for each period.</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-row">
+          <div class="segmented" role="group" aria-label="Forecast horizon" id="horizon-group">
+            <button type="button" data-horizon="1" aria-pressed="false">1 month</button>
+            <button type="button" data-horizon="3" aria-pressed="true">3 months</button>
+            <button type="button" data-horizon="6" aria-pressed="false">6 months</button>
+            <button type="button" data-horizon="12" aria-pressed="false">12 months</button>
+          </div>
+        </div>
+        <div class="control-row">
+          <label>Thinking depth
+            <select id="effort">
+              <option value="medium">Standard</option>
+              <option value="high" selected>Deep</option>
+              <option value="xhigh">Extra deep</option>
+              <option value="max">Maximum</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="web" checked /> Check live climate signals (ENSO, official outlooks)</label>
+        </div>
+        <textarea class="question" id="question" rows="1" maxlength="500"
+                  placeholder="Ask about the period (optional) — e.g. “Will late December be snowy enough for skiing?” or “Best month for an outdoor wedding?”"></textarea>
+        <div class="control-row">
+          <button type="button" class="primary" id="generate">Generate outlook</button>
+          <span class="muted small" id="model-note"></span>
+        </div>
+      </div>
+
+      <details class="reasoning hidden" id="reasoning" open>
+        <summary><span class="spinner" id="spinner"></span><span>AI reasoning</span><span class="status" id="status"></span></summary>
+        <div class="body">
+          <div class="searches" id="searches"></div>
+          <div class="thinking-text" id="thinking" aria-live="off"></div>
+        </div>
+      </details>
+
+      <div id="outlook-result"></div>
+    </section>
+
+    <div class="lower hidden" id="lower">
+      <section class="card" id="next16">
+        <div class="section-head"><h2>Next 16 days</h2><span class="muted small">Dashed line = normal high</span></div>
+        <div class="days" id="days"></div>
+      </section>
+      <div style="display:grid; gap:20px; align-content:start; min-width:0">
+        <section class="card" id="hourly">
+          <h2>Next 24 hours</h2>
+          <div class="hours" id="hours" style="margin-top:12px"></div>
+        </section>
+        <section class="card" id="normals">
+          <h2>Climate at a glance</h2>
+          <div class="card-sub" id="normals-sub"></div>
+          <div id="normals-body"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Data: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> (ECMWF IFS &amp; SEAS5, ERA5 reanalysis, CC BY 4.0). Outlooks beyond about two weeks are probabilistic — they describe shifts in the odds, not day-by-day weather. Use official sources for safety-critical decisions.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

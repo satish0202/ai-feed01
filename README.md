@@ -2,6 +2,8 @@
 
 A lightweight Node.js app that aggregates AI, agentic systems, and banking/fintech news into a live browser feed — powered by [NewsAPI](https://newsapi.org).
 
+> **Also in this repo:** [`weather-forecast/`](weather-forecast/): **Horizon**, a long-range weather app (1-, 3-, 6- and 12-month outlooks) that uses Claude with deep thinking on top of 35 years of climate history and seasonal ensembles. See its [README](weather-forecast/README.md).
+
 ## Features
 
 - Cards with headline, source, time, excerpt, and topic tags
